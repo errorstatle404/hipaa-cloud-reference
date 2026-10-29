@@ -34,12 +34,12 @@ One entry per significant choice: what was decided, why, and what it costs. Entr
 ### ADR-007: CloudTrail S3 data events instead of S3 server access logs
 **Decision.** Log every object read and write on the PHI bucket as CloudTrail data events.
 **Why.** HIPAA 164.312(b) asks for audit controls that record activity in systems containing ePHI. Data events carry the IAM identity, are delivered to the KMS-encrypted log bucket with integrity validation, and feed the alarms. S3 server access logs cannot be delivered to an SSE-KMS bucket and carry weaker identity information.
-**Cost.** $0.10 per 100,000 data events [verify]; negligible at lab volume.
+**Cost.** $0.10 per 100,000 data events; negligible at lab volume.
 
 ### ADR-008: Lambda instead of EC2 for the app tier
 **Decision.** The application tier is a Python Lambda attached to the private subnets.
 **Why.** The account's EC2 quota is 1 vCPU (this is what stopped the PQC lab's AWS run). Lambda also removes OS patching from the threat model and costs nothing at this volume.
-**Accepted scanner findings.** No reserved concurrency: new accounts have a 10-execution quota and AWS rejects reservations that leave fewer than 10 unreserved. No code signing: AWS Signer is a production addition. No DLQ: the function is only invoked synchronously.
+**Accepted scanner findings.** No reserved concurrency: new accounts get a low concurrency quota (5 on this account) and AWS rejects reservations that leave fewer than the minimum unreserved. No code signing: AWS Signer is a production addition. No DLQ: the function is only invoked synchronously.
 
 ### ADR-009: Local Terraform state
 **Decision.** State stays on the operator's laptop and is gitignored.

@@ -1,6 +1,6 @@
 # HIPAA-style cloud reference architecture on AWS
 
-> Designed and deployed a HIPAA-style AWS architecture for synthetic patient records, with least-privilege IAM, customer-managed KMS encryption that even the administrator can't use to decrypt, and audit logging on every record access, all written as Terraform and checked against CIS and the HIPAA Security Rule.
+> Designed and built a HIPAA-style AWS architecture for synthetic patient records, with least-privilege IAM, customer-managed KMS encryption that even the administrator can't use to decrypt, and audit logging on every record access, all written as Terraform and checked against CIS and the HIPAA Security Rule.
 
 **Status:** code complete and statically checked; first AWS deployment and results pending.
 
@@ -62,7 +62,7 @@ Pending first deployment: control verification output, AWS Config compliance, Pr
 
 ## Static analysis
 
-`checkov` passes with 235 checks and 0 failures. 20 checks are skipped, each with a written reason in the code (for example, Lambda reserved concurrency cannot be set on a new account's 10-execution quota). Every skip is also covered in the decision log.
+`checkov` passes with 235 checks and 0 failures. 20 checks are skipped, each with a written reason in the code (for example, Lambda reserved concurrency cannot be set on a new account's low concurrency quota). Every skip is also covered in the decision log.
 
 ## What I'd do with more time or budget
 

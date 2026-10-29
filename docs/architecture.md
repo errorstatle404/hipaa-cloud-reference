@@ -3,7 +3,7 @@
 ```mermaid
 flowchart LR
   subgraph laptop["Operator laptop (internet)"]
-    admin["evy-admin<br/>(IAM user, MFA)"]
+    admin["Admin IAM user<br/>(MFA)"]
   end
 
   subgraph aws["AWS account · us-east-2"]

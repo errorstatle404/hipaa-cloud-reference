@@ -17,7 +17,7 @@ resource "aws_cloudwatch_log_group" "fn" {
 # The application tier: reads synthetic FHIR records from inside the VPC and
 # returns only aggregate counts, never record contents (minimum necessary).
 resource "aws_lambda_function" "reader" {
-  #checkov:skip=CKV_AWS_115:New accounts have a 10-execution concurrency quota and AWS rejects reservations that leave fewer than 10 unreserved (ADR-008).
+  #checkov:skip=CKV_AWS_115:New accounts get a low concurrency quota (5 here); AWS rejects reservations below the unreserved minimum (ADR-008).
   #checkov:skip=CKV_AWS_116:Invoked synchronously only; a DLQ applies to async invocations.
   #checkov:skip=CKV_AWS_272:Code signing (AWS Signer) is listed as a production addition (ADR-008).
   #checkov:skip=CKV_AWS_173:Environment holds only the bucket name and prefix, no secrets.

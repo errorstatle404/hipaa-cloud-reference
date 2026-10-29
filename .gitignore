@@ -6,6 +6,7 @@
 !*.tfvars.example
 crash.log
 *.tfplan
+tfplan
 terraform/modules/app/build/
 
 # Synthetic data stays local (it's synthetic, but treat it like the real thing)
@@ -19,3 +20,6 @@ __pycache__/
 # Never commit credentials
 .env
 *.pem
+
+# Evidence contains the AWS account ID; publish redacted copies only
+evidence/

@@ -1,0 +1,7 @@
+variable "name_prefix" { type = string }
+variable "region" { type = string }
+variable "account_id" { type = string }
+variable "phi_bucket_name" { type = string }
+variable "data_key_arn" { type = string }
+variable "ingest_principal_arns" { type = list(string) }
+variable "require_mfa_for_ingest" { type = bool }

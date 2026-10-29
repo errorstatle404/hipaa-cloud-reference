@@ -1,0 +1,11 @@
+variable "name_prefix" { type = string }
+variable "region" { type = string }
+variable "account_id" { type = string }
+variable "key_admin_arns" { type = list(string) }
+variable "logs_bucket_name" { type = string }
+variable "trail_name" { type = string }
+variable "phi_bucket_name" { type = string }
+variable "log_retention_days" { type = number }
+variable "log_archive_days" { type = number }
+variable "force_destroy" { type = bool }
+variable "enable_config" { type = bool }

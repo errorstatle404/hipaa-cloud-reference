@@ -1,0 +1,9 @@
+variable "name_prefix" { type = string }
+variable "region" { type = string }
+variable "account_id" { type = string }
+variable "key_admin_arns" { type = list(string) }
+variable "phi_bucket_name" { type = string }
+variable "reader_role_arns" { type = list(string) }
+variable "writer_role_arns" { type = list(string) }
+variable "s3_endpoint_id" { type = string }
+variable "force_destroy" { type = bool }

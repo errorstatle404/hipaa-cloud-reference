@@ -1,0 +1,9 @@
+variable "name_prefix" { type = string }
+variable "region" { type = string }
+variable "account_id" { type = string }
+variable "trail_log_group" { type = string }
+variable "logs_key_arn" { type = string }
+variable "phi_bucket_name" { type = string }
+variable "alert_email" { type = string }
+variable "enable_guardduty" { type = bool }
+variable "enable_securityhub" { type = bool }

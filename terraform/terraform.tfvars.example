@@ -1,0 +1,9 @@
+# Copy to terraform.tfvars (gitignored) and edit.
+region      = "us-east-2"
+owner       = "evy"
+alert_email = "you@example.com"
+
+# Turn these on only for a bounded scan window, then off again.
+enable_config      = true
+enable_guardduty   = false
+enable_securityhub = false

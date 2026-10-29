@@ -7,3 +7,7 @@ alert_email = "you@example.com"
 enable_config      = true
 enable_guardduty   = false
 enable_securityhub = false
+
+# Organization member accounts: set false if SCPs own these account-wide settings.
+manage_account_settings = true
+enable_access_analyzer  = true

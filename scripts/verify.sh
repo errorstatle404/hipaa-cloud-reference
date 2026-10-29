@@ -80,9 +80,13 @@ echo "      app returned: $(cat "$TMP/out.json" 2>/dev/null)"
 check "App reads records and returns aggregates only" '"patients": [1-9]' cat "$TMP/out.json"
 
 echo "== Findings"
-AA=$(aws accessanalyzer list-analyzers --type ACCOUNT --query 'analyzers[?name==`hipaa-ref-analyzer`].arn' --output text)
-check "IAM Access Analyzer: no active external-access findings" "^0$" \
-  aws accessanalyzer list-findings-v2 --analyzer-arn "$AA" --filter '{"status":{"eq":["ACTIVE"]}}' --query 'length(findings)' --output text
+AA=$(aws accessanalyzer list-analyzers --type ACCOUNT --query 'analyzers[?name==`hipaa-ref-analyzer`].arn' --output text 2>/dev/null)
+if [[ -n "$AA" && "$AA" != "None" ]]; then
+  check "IAM Access Analyzer: no active external-access findings" "^0$" \
+    aws accessanalyzer list-findings-v2 --analyzer-arn "$AA" --filter '{"status":{"eq":["ACTIVE"]}}' --query 'length(findings)' --output text
+else
+  echo "SKIP  IAM Access Analyzer (not created here: enable_access_analyzer = false)"
+fi
 echo "      AWS Config rule results (may take ~15 min after deploy to settle):"
 aws configservice describe-compliance-by-config-rule \
   --query 'ComplianceByConfigRules[?starts_with(ConfigRuleName,`hipaa-ref`)].[Compliance.ComplianceType,ConfigRuleName]' --output text 2>/dev/null \

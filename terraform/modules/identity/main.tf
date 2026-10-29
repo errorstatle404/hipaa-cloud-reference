@@ -183,14 +183,20 @@ resource "aws_iam_role_policy" "ingest" {
 }
 
 # ---------- Account baseline (CIS AWS Foundations) ----------
+# In an AWS Organization these may be owned by the management account (SCPs),
+# so each can be switched off from the root module (ADR-001).
 
 # Flags any resource shared outside the account (free).
 resource "aws_accessanalyzer_analyzer" "account" {
+  count = var.enable_access_analyzer ? 1 : 0
+
   analyzer_name = "${var.name_prefix}-analyzer"
   type          = "ACCOUNT"
 }
 
 resource "aws_iam_account_password_policy" "cis" {
+  count = var.manage_account_settings ? 1 : 0
+
   minimum_password_length        = 14
   require_lowercase_characters   = true
   require_uppercase_characters   = true
@@ -202,6 +208,8 @@ resource "aws_iam_account_password_policy" "cis" {
 }
 
 resource "aws_s3_account_public_access_block" "account" {
+  count = var.manage_account_settings ? 1 : 0
+
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -209,5 +217,7 @@ resource "aws_s3_account_public_access_block" "account" {
 }
 
 resource "aws_ebs_encryption_by_default" "account" {
+  count = var.manage_account_settings ? 1 : 0
+
   enabled = true
 }

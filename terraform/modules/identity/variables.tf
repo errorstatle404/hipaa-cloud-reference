@@ -5,3 +5,5 @@ variable "phi_bucket_name" { type = string }
 variable "data_key_arn" { type = string }
 variable "ingest_principal_arns" { type = list(string) }
 variable "require_mfa_for_ingest" { type = bool }
+variable "manage_account_settings" { type = bool }
+variable "enable_access_analyzer" { type = bool }

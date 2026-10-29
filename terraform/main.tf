@@ -44,6 +44,9 @@ module "identity" {
   data_key_arn           = module.storage.data_key_arn
   ingest_principal_arns  = local.key_admin_arns
   require_mfa_for_ingest = var.require_mfa_for_ingest
+
+  manage_account_settings = var.manage_account_settings
+  enable_access_analyzer  = var.enable_access_analyzer
 }
 
 module "storage" {

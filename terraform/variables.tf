@@ -75,3 +75,15 @@ variable "enable_securityhub" {
   type        = bool
   default     = false
 }
+
+variable "manage_account_settings" {
+  description = "Manage account-wide CIS settings (password policy, account S3 Block Public Access, EBS default encryption). Set false when an Organization SCP or another owner manages them."
+  type        = bool
+  default     = true
+}
+
+variable "enable_access_analyzer" {
+  description = "Create an account-level IAM Access Analyzer. Set false when the Organization runs one centrally or an SCP blocks it."
+  type        = bool
+  default     = true
+}

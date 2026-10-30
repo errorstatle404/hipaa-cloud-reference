@@ -140,10 +140,11 @@ data "aws_iam_policy_document" "logs_bucket" {
   }
 
   statement {
+    # Hive-compatible partitions put the account under aws-account-id=<id>/.
     sid       = "FlowLogsWrite"
     effect    = "Allow"
     actions   = ["s3:PutObject"]
-    resources = ["${aws_s3_bucket.logs.arn}/vpc-flow-logs/AWSLogs/${var.account_id}/*"]
+    resources = ["${aws_s3_bucket.logs.arn}/vpc-flow-logs/AWSLogs/aws-account-id=${var.account_id}/*"]
 
     principals {
       type        = "Service"
@@ -154,6 +155,18 @@ data "aws_iam_policy_document" "logs_bucket" {
       test     = "StringEquals"
       variable = "aws:SourceAccount"
       values   = [var.account_id]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "s3:x-amz-acl"
+      values   = ["bucket-owner-full-control"]
+    }
+
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = ["arn:aws:logs:${var.region}:${var.account_id}:*"]
     }
   }
 }

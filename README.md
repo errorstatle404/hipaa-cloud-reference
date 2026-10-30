@@ -58,58 +58,19 @@ Copy `terraform/terraform.tfvars.example` to `terraform/terraform.tfvars` and se
 
 ## Results
 
-`make verify` on the deployed build: **14 passed, 0 failed, 1 skipped.** The data was 34 synthetic patients (25 living, 9 deceased) from Synthea with seed 2026; no real patient data was used.
+Deployed and tested on Oct 30, 2026. Full detail is in **[docs/results.md](docs/results.md)**, with a one-page summary for a board audience in **[docs/executive-brief.md](docs/executive-brief.md)**. These are results from one lab run on synthetic data, not a HIPAA compliance certification.
 
-**Audit logging (164.312(b))**
-- PASS: CloudTrail is logging
-- PASS: Trail is multi-region with log file validation
-- PASS: VPC Flow Logs active
-- PASS: 15 security alarms in place
+| Check | Result |
+|---|---|
+| `make verify` | 14 passed, 0 failed, 1 skipped (Access Analyzer, blocked by an Organization SCP) |
+| Denied read to alarm | 6 minutes in a timed run, with the alert email received |
+| CloudTrail data events | Each record read and write logged with identity and outcome, including refusals |
+| AWS Config (18 rules) | 12 compliant, 4 non-compliant, 2 no result |
+| Prowler HIPAA checks, `us-east-2` | 18 failures, then 12 after fixes; 2 are in this build, both a documented design choice |
 
-**Encryption (164.312(a)(2)(iv))**
-- PASS: PHI key rotation enabled
-- PASS: Log key rotation enabled
-- PASS: PHI bucket default encryption uses the PHI key
+**Known gaps:** account-level S3 Block Public Access is **not enabled** (an SCP blocks this member account from setting it, so it must be set from the management account). Log integrity validation has not been run, because it needs a dedicated auditor role. The MFA Config rules returned no result.
 
-**Access control (164.312(a)(1))**
-- PASS: Running as an IAM user, not root
-- PASS: Bucket blocks all public access
-- PASS: Admin CANNOT read a patient record from the internet
-- PASS: Admin CANNOT write records directly
-- PASS: Ingest role CANNOT read records back
-
-**Transmission security (164.312(e)(1))**
-- PASS: Plain HTTP (no TLS) is refused
-
-**The app path (inside the VPC, through the endpoint)**
-- PASS: App reads records and returns aggregates only
-
-**Skipped**
-- SKIP: IAM Access Analyzer. The lab account is a member of an AWS Organization whose SCPs block it.
-
-### Deployed in this run
-
-This verify run did not set the account password policy, EBS default encryption, account-level S3 Block Public Access or Access Analyzer, and GuardDuty and Security Hub stayed off. An Organization SCP blocks this member account from managing account-level S3 Block Public Access and from using Access Analyzer, GuardDuty and Security Hub. Account-level S3 Block Public Access has to be set from the management account and is currently **not enabled**: a real gap, listed as a finding below (see ADR-001).
-
-### AWS Config: 18 rules
-
-11 compliant, 5 non-compliant, 2 with no result yet.
-
-| Result | Rule | Explanation |
-|---|---|---|
-| Non-compliant | `cmk-backing-key-rotation-enabled` | **A gap in this build.** Config reports that its IAM role does not allow `kms:DescribeKey`, so it cannot evaluate this build's two keys. Asking KMS directly shows rotation is on for both. Re-evaluating did not change the result. A fix giving Config read access to both keys is in the code and has not been re-verified yet. |
-| Non-compliant | `s3-account-level-public-access-blocks-periodic` | **A real gap.** An Organization SCP blocks this account from setting it, so it must be set from the management account. It is not enabled. Bucket-level Block Public Access is on and verified. |
-| Non-compliant | `s3-bucket-versioning-enabled` | A log bucket that existed before this build. |
-| Non-compliant | `vpc-default-security-group-closed` | Default security groups in two VPCs that existed before this build. This build's own default group is not flagged. |
-| Non-compliant | `vpc-flow-logs-enabled` | The account's default VPC, which existed before this build. |
-| No result yet | `mfa-enabled-for-iam-console-access`, `root-account-mfa-enabled` | Not evaluated at the time of this run, so these are not claimed as passing. |
-
-### What isn't proven yet
-
-- Alarm delivery: the denied reads in `make verify` did put the `phi-access-denied` alarm into ALARM, but no alert email was subscribed, so a notification reaching a person has not been shown.
-- `verify.sh` shows the bucket policy refusing the admin. It does not separately test the KMS key policy refusing decryption.
-- `verify.sh` confirms CloudTrail is logging. It does not check that a specific record read appears as a data event.
-- Prowler before/after results and measured cost are still to come.
+**What testing caught:** real deployment found three bugs that static analysis had passed, including one that would have silently stopped flow-log delivery. See [what they were and how they were fixed](docs/results.md#bugs-that-testing-found).
 
 ## Static analysis
 

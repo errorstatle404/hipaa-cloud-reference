@@ -51,7 +51,7 @@ check "PHI bucket default encryption uses the PHI key" "$DATA_KEY" \
 echo "== Access control (164.312(a)(1))"
 check "Bucket blocks all public access" "True	True	True	True" \
   aws s3api get-public-access-block --bucket "$BUCKET" --query 'PublicAccessBlockConfiguration.[BlockPublicAcls,IgnorePublicAcls,BlockPublicPolicy,RestrictPublicBuckets]' --output text
-KEY1=$(aws s3api list-objects-v2 --bucket "$BUCKET" --prefix fhir/ --max-items 1 --query 'Contents[0].Key' --output text 2>/dev/null)
+KEY1=$(aws s3api list-objects-v2 --bucket "$BUCKET" --prefix fhir/ --max-items 1 --query 'Contents[0].Key' --output text 2>/dev/null | head -1)
 if [[ -n "$KEY1" && "$KEY1" != "None" ]]; then
   check "Admin CANNOT read a patient record from the internet" "AccessDenied" \
     aws s3api get-object --bucket "$BUCKET" --key "$KEY1" "$TMP/record.json"

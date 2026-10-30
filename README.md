@@ -1,8 +1,8 @@
 # HIPAA-style cloud reference architecture on AWS
 
-> Designed and built a HIPAA-style AWS architecture for synthetic patient records, with least-privilege IAM, customer-managed KMS encryption that even the administrator can't use to decrypt, and audit logging on every record access, all written as Terraform and checked against CIS and the HIPAA Security Rule.
+> Designed and deployed a HIPAA-style AWS architecture for synthetic patient records, with least-privilege IAM, customer-managed KMS encryption that even the administrator can't use to decrypt, and audit logging on every record access, all written as Terraform and checked against CIS and the HIPAA Security Rule.
 
-**Status:** code complete and statically checked; first AWS deployment and results pending.
+**Status:** deployed and verified on Oct 30, 2026 in a lab account. This is a lab build, meant to be torn down after testing; rebuild it with `make up`.
 
 ## The problem
 
@@ -47,7 +47,7 @@ make test      # Lambda unit tests (no AWS)
 make init
 make plan      # review what will be created
 make up        # create (type yes)
-make data      # 25 synthetic patients via Synthea
+make data      # synthetic patients via Synthea (25 living, plus deceased)
 make upload    # upload as the ingest role
 make verify    # prove each control; saves evidence/verify-*.txt
 make scan      # Prowler HIPAA checks; saves evidence/prowler/
@@ -58,7 +58,58 @@ Copy `terraform/terraform.tfvars.example` to `terraform/terraform.tfvars` and se
 
 ## Results
 
-Pending first deployment: control verification output, AWS Config compliance, Prowler before/after, and measured cost.
+`make verify` on the deployed build: **14 passed, 0 failed, 1 skipped.** The data was 34 synthetic patients (25 living, 9 deceased) from Synthea with seed 2026; no real patient data was used.
+
+**Audit logging (164.312(b))**
+- PASS: CloudTrail is logging
+- PASS: Trail is multi-region with log file validation
+- PASS: VPC Flow Logs active
+- PASS: 15 security alarms in place
+
+**Encryption (164.312(a)(2)(iv))**
+- PASS: PHI key rotation enabled
+- PASS: Log key rotation enabled
+- PASS: PHI bucket default encryption uses the PHI key
+
+**Access control (164.312(a)(1))**
+- PASS: Running as an IAM user, not root
+- PASS: Bucket blocks all public access
+- PASS: Admin CANNOT read a patient record from the internet
+- PASS: Admin CANNOT write records directly
+- PASS: Ingest role CANNOT read records back
+
+**Transmission security (164.312(e)(1))**
+- PASS: Plain HTTP (no TLS) is refused
+
+**The app path (inside the VPC, through the endpoint)**
+- PASS: App reads records and returns aggregates only
+
+**Skipped**
+- SKIP: IAM Access Analyzer. The lab account is a member of an AWS Organization whose SCPs block it.
+
+### Deployed in this run
+
+The account's Organization SCPs block or own some account-wide services, so this deployment ran with `manage_account_settings = false` and `enable_access_analyzer = false` (see ADR-001). The account password policy, account-level S3 Block Public Access, EBS default encryption and Access Analyzer were not set by this build. GuardDuty and Security Hub stayed off.
+
+### AWS Config: 18 rules
+
+11 compliant, 5 non-compliant, 2 with no result yet.
+
+| Result | Rule | Explanation |
+|---|---|---|
+| Non-compliant | `cmk-backing-key-rotation-enabled` | **A gap in this build.** Config reports that its IAM role does not allow `kms:DescribeKey`, so it cannot evaluate this build's two keys. Asking KMS directly shows rotation is on for both. Re-evaluating did not change the result; the role needs fixing. |
+| Non-compliant | `s3-account-level-public-access-blocks-periodic` | Deferred to the Organization's management account, and not set by this build. Bucket-level Block Public Access is on and verified. |
+| Non-compliant | `s3-bucket-versioning-enabled` | A log bucket that existed before this build. |
+| Non-compliant | `vpc-default-security-group-closed` | Default security groups in two VPCs that existed before this build. This build's own default group is not flagged. |
+| Non-compliant | `vpc-flow-logs-enabled` | The account's default VPC, which existed before this build. |
+| No result yet | `mfa-enabled-for-iam-console-access`, `root-account-mfa-enabled` | Not evaluated at the time of this run, so these are not claimed as passing. |
+
+### What isn't proven yet
+
+- Alarm delivery: no test has shown a denied access reaching an alarm notification end to end. No alert email was subscribed in this run.
+- `verify.sh` shows the bucket policy refusing the admin. It does not separately test the KMS key policy refusing decryption.
+- `verify.sh` confirms CloudTrail is logging. It does not check that a specific record read appears as a data event.
+- Prowler before/after results and measured cost are still to come.
 
 ## Static analysis
 

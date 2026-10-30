@@ -9,3 +9,4 @@ variable "log_retention_days" { type = number }
 variable "log_archive_days" { type = number }
 variable "force_destroy" { type = bool }
 variable "enable_config" { type = bool }
+variable "data_key_arn" { type = string }

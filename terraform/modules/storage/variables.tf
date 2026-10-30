@@ -7,3 +7,4 @@ variable "reader_role_arns" { type = list(string) }
 variable "writer_role_arns" { type = list(string) }
 variable "s3_endpoint_id" { type = string }
 variable "force_destroy" { type = bool }
+variable "config_role_arns" { type = list(string) }

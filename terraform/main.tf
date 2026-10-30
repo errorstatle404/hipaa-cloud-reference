@@ -32,6 +32,7 @@ module "logging" {
   log_archive_days   = var.log_archive_days
   force_destroy      = var.lab_force_destroy
   enable_config      = var.enable_config
+  data_key_arn       = module.storage.data_key_arn
 }
 
 module "identity" {
@@ -45,8 +46,10 @@ module "identity" {
   ingest_principal_arns  = local.key_admin_arns
   require_mfa_for_ingest = var.require_mfa_for_ingest
 
-  manage_account_settings = var.manage_account_settings
-  enable_access_analyzer  = var.enable_access_analyzer
+  manage_password_policy             = var.manage_password_policy
+  manage_ebs_default_encryption      = var.manage_ebs_default_encryption
+  manage_account_public_access_block = var.manage_account_public_access_block
+  enable_access_analyzer             = var.enable_access_analyzer
 }
 
 module "storage" {
@@ -61,6 +64,7 @@ module "storage" {
   writer_role_arns = [module.identity.ingest_role_arn]
   s3_endpoint_id   = module.network.s3_endpoint_id
   force_destroy    = var.lab_force_destroy
+  config_role_arns = var.enable_config ? [module.logging.config_role_arn] : []
 }
 
 module "app" {

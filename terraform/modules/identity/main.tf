@@ -183,8 +183,8 @@ resource "aws_iam_role_policy" "ingest" {
 }
 
 # ---------- Account baseline (CIS AWS Foundations) ----------
-# In an AWS Organization these may be owned by the management account (SCPs),
-# so each can be switched off from the root module (ADR-001).
+# An Organization SCP can block a member account from managing these, so each
+# has its own switch in the root module (ADR-001).
 
 # Flags any resource shared outside the account (free).
 resource "aws_accessanalyzer_analyzer" "account" {
@@ -195,7 +195,7 @@ resource "aws_accessanalyzer_analyzer" "account" {
 }
 
 resource "aws_iam_account_password_policy" "cis" {
-  count = var.manage_account_settings ? 1 : 0
+  count = var.manage_password_policy ? 1 : 0
 
   minimum_password_length        = 14
   require_lowercase_characters   = true
@@ -208,7 +208,7 @@ resource "aws_iam_account_password_policy" "cis" {
 }
 
 resource "aws_s3_account_public_access_block" "account" {
-  count = var.manage_account_settings ? 1 : 0
+  count = var.manage_account_public_access_block ? 1 : 0
 
   block_public_acls       = true
   block_public_policy     = true
@@ -217,7 +217,7 @@ resource "aws_s3_account_public_access_block" "account" {
 }
 
 resource "aws_ebs_encryption_by_default" "account" {
-  count = var.manage_account_settings ? 1 : 0
+  count = var.manage_ebs_default_encryption ? 1 : 0
 
   enabled = true
 }

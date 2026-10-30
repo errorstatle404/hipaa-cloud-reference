@@ -124,6 +124,22 @@ data "aws_iam_policy_document" "logs_key" {
       }
     }
   }
+
+  # Lets the key-rotation Config rule read this key. Metadata only, no key use.
+  dynamic "statement" {
+    for_each = var.enable_config ? [1] : []
+    content {
+      sid       = "ConfigEvaluateKey"
+      effect    = "Allow"
+      actions   = ["kms:DescribeKey", "kms:GetKeyRotationStatus"]
+      resources = ["*"]
+
+      principals {
+        type        = "AWS"
+        identifiers = [aws_iam_role.config[0].arn]
+      }
+    }
+  }
 }
 
 locals {

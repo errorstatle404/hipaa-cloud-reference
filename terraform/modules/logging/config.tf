@@ -57,6 +57,11 @@ resource "aws_iam_role_policy" "config_delivery" {
         Action   = ["kms:Decrypt", "kms:GenerateDataKey"]
         Resource = aws_kms_key.logs.arn
       },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:DescribeKey", "kms:GetKeyRotationStatus"]
+        Resource = [aws_kms_key.logs.arn, var.data_key_arn]
+      },
     ]
   })
 }

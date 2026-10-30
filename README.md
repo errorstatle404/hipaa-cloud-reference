@@ -89,7 +89,7 @@ Copy `terraform/terraform.tfvars.example` to `terraform/terraform.tfvars` and se
 
 ### Deployed in this run
 
-The account's Organization SCPs block or own some account-wide services, so this deployment ran with `manage_account_settings = false` and `enable_access_analyzer = false` (see ADR-001). The account password policy, account-level S3 Block Public Access, EBS default encryption and Access Analyzer were not set by this build. GuardDuty and Security Hub stayed off.
+This verify run did not set the account password policy, EBS default encryption, account-level S3 Block Public Access or Access Analyzer, and GuardDuty and Security Hub stayed off. An Organization SCP blocks this member account from managing account-level S3 Block Public Access and from using Access Analyzer, GuardDuty and Security Hub. Account-level S3 Block Public Access has to be set from the management account and is currently **not enabled**: a real gap, listed as a finding below (see ADR-001).
 
 ### AWS Config: 18 rules
 
@@ -97,8 +97,8 @@ The account's Organization SCPs block or own some account-wide services, so this
 
 | Result | Rule | Explanation |
 |---|---|---|
-| Non-compliant | `cmk-backing-key-rotation-enabled` | **A gap in this build.** Config reports that its IAM role does not allow `kms:DescribeKey`, so it cannot evaluate this build's two keys. Asking KMS directly shows rotation is on for both. Re-evaluating did not change the result; the role needs fixing. |
-| Non-compliant | `s3-account-level-public-access-blocks-periodic` | Deferred to the Organization's management account, and not set by this build. Bucket-level Block Public Access is on and verified. |
+| Non-compliant | `cmk-backing-key-rotation-enabled` | **A gap in this build.** Config reports that its IAM role does not allow `kms:DescribeKey`, so it cannot evaluate this build's two keys. Asking KMS directly shows rotation is on for both. Re-evaluating did not change the result. A fix giving Config read access to both keys is in the code and has not been re-verified yet. |
+| Non-compliant | `s3-account-level-public-access-blocks-periodic` | **A real gap.** An Organization SCP blocks this account from setting it, so it must be set from the management account. It is not enabled. Bucket-level Block Public Access is on and verified. |
 | Non-compliant | `s3-bucket-versioning-enabled` | A log bucket that existed before this build. |
 | Non-compliant | `vpc-default-security-group-closed` | Default security groups in two VPCs that existed before this build. This build's own default group is not flagged. |
 | Non-compliant | `vpc-flow-logs-enabled` | The account's default VPC, which existed before this build. |
@@ -106,14 +106,14 @@ The account's Organization SCPs block or own some account-wide services, so this
 
 ### What isn't proven yet
 
-- Alarm delivery: no test has shown a denied access reaching an alarm notification end to end. No alert email was subscribed in this run.
+- Alarm delivery: the denied reads in `make verify` did put the `phi-access-denied` alarm into ALARM, but no alert email was subscribed, so a notification reaching a person has not been shown.
 - `verify.sh` shows the bucket policy refusing the admin. It does not separately test the KMS key policy refusing decryption.
 - `verify.sh` confirms CloudTrail is logging. It does not check that a specific record read appears as a data event.
 - Prowler before/after results and measured cost are still to come.
 
 ## Static analysis
 
-`checkov` passes with 235 checks and 0 failures. 20 checks are skipped, each with a written reason in the code (for example, Lambda reserved concurrency cannot be set on a new account's low concurrency quota). Every skip is also covered in the decision log.
+`checkov` passes with 216 checks and 0 failures. 20 checks are skipped, each with a written reason in the code (for example, Lambda reserved concurrency cannot be set on a new account's low concurrency quota). Every skip is also covered in the decision log.
 
 ## What I'd do with more time or budget
 

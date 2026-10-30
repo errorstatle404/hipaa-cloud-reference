@@ -61,6 +61,22 @@ data "aws_iam_policy_document" "data_key" {
       values   = ["s3.${var.region}.amazonaws.com"]
     }
   }
+
+  # Lets the key-rotation Config rule read this key. Metadata only, no key use.
+  dynamic "statement" {
+    for_each = length(var.config_role_arns) > 0 ? [1] : []
+    content {
+      sid       = "ConfigEvaluateKey"
+      effect    = "Allow"
+      actions   = ["kms:DescribeKey", "kms:GetKeyRotationStatus"]
+      resources = ["*"]
+
+      principals {
+        type        = "AWS"
+        identifiers = var.config_role_arns
+      }
+    }
+  }
 }
 
 resource "aws_kms_key" "data" {

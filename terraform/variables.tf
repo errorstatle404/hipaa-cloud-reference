@@ -76,8 +76,20 @@ variable "enable_securityhub" {
   default     = false
 }
 
-variable "manage_account_settings" {
-  description = "Manage account-wide CIS settings (password policy, account S3 Block Public Access, EBS default encryption). Set false when an Organization SCP or another owner manages them."
+variable "manage_password_policy" {
+  description = "Set the account-wide IAM password policy. It applies to every IAM user in the account."
+  type        = bool
+  default     = true
+}
+
+variable "manage_ebs_default_encryption" {
+  description = "Turn on EBS encryption by default for this account and region."
+  type        = bool
+  default     = true
+}
+
+variable "manage_account_public_access_block" {
+  description = "Set account-level S3 Block Public Access. Set false when an Organization SCP blocks this account from managing it; it must then be set from the management account."
   type        = bool
   default     = true
 }

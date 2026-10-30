@@ -19,3 +19,7 @@ output "trail_name" {
 output "trail_log_group_name" {
   value = aws_cloudwatch_log_group.trail.name
 }
+
+output "config_role_arn" {
+  value = var.enable_config ? aws_iam_role.config[0].arn : null
+}

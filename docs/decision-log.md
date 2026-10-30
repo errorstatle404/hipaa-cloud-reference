@@ -6,7 +6,7 @@ One entry per significant choice: what was decided, why, and what it costs. Entr
 **Decision.** Build everything in a single account.
 **Why.** A real healthcare workload belongs in an AWS Organization with separate log-archive, security-tooling and workload accounts, so that a compromised workload account cannot erase its own audit trail. Creating or joining an Organization moves a Free plan account to the Paid plan with no way back. The single-account build demonstrates the controls; the architecture doc shows the multi-account target.
 **Trade-off.** An administrator in this account can, in principle, reach both the data and the logs.
-**In an Organization.** Account-wide guardrails (password policy, account-level S3 Block Public Access, EBS default encryption, Access Analyzer) belong to the management or security account and are enforced there with SCPs. When this build runs in a member account, set `manage_account_settings = false` and `enable_access_analyzer = false` so it defers to those guardrails instead of fighting them.
+**In an Organization.** An SCP blocks this member account from managing account-level S3 Block Public Access, so it has to be set from the management account. It is currently **not enabled**: a real gap, listed as a finding, with bucket-level Block Public Access on as the remaining control. An SCP also blocks Access Analyzer. Each account-wide setting has its own switch (`manage_password_policy`, `manage_ebs_default_encryption`, `manage_account_public_access_block`, `enable_access_analyzer`) so a blocked one can be turned off without losing the others.
 
 ### ADR-002: Terraform, us-east-2, same toolchain as the PQC lab
 **Decision.** Terraform with the AWS provider 6.x, in us-east-2.

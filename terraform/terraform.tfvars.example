@@ -8,6 +8,8 @@ enable_config      = true
 enable_guardduty   = false
 enable_securityhub = false
 
-# Organization member accounts: set false if SCPs own these account-wide settings.
-manage_account_settings = true
-enable_access_analyzer  = true
+# Organization member accounts: set any of these false if an SCP blocks it.
+manage_password_policy             = true
+manage_ebs_default_encryption      = true
+manage_account_public_access_block = true
+enable_access_analyzer             = true

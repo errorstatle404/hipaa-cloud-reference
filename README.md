@@ -35,7 +35,7 @@ flowchart LR
 | Audit and detection | Multi-region CloudTrail with log file validation and S3 data events; 15 CloudWatch alarms (CIS 4.1–4.14 plus PHI access denied); 18 AWS Config rules mapped to 164.312; GuardDuty and Security Hub for a bounded window |
 | Application | Python Lambda in the private subnets that reads FHIR records through the endpoint and returns aggregate counts only |
 
-Design reasoning: [decision log](docs/decision-log.md) (14 entries) · [threat model and risk register](docs/threat-model.md) · [HIPAA control matrix](docs/control-matrix.md)
+Design reasoning: [decision log](docs/decision-log.md) (15 entries) · [threat model and risk register](docs/threat-model.md) · [HIPAA control matrix](docs/control-matrix.md)
 
 ## How to run it
 

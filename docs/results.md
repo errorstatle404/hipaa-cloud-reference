@@ -152,6 +152,10 @@ Each of these was found by running the build, not by static analysis. checkov pa
 | The flow-log bucket rule named a path flow logs never use | A later Terraform plan would have removed the only working permission, a statement AWS had added itself | Pointed the rule at the real path, then confirmed new log files kept arriving |
 | `verify.sh` asked for a key that did not exist | Two access tests failed with `NoSuchKey` rather than `AccessDenied` | Fixed the key lookup, and confirmed the denials with a real key |
 
+## Teardown
+
+The build was destroyed on Oct 31, 2026 (101 resources). A check afterward found no S3 buckets, Lambda function, VPC, trail, Config recorder or rules, alarms, log groups, SNS topic or IAM roles left from this build. Both KMS keys are scheduled for deletion after the 7-day waiting period. The account password policy and EBS default encryption were deliberately left on, so removing the lab did not weaken the account.
+
 ## Not yet proven
 
 - **Log file integrity:** `aws cloudtrail validate-logs` could not run. The log key's policy denied the administrator `kms:Decrypt`, so separation of duties also blocks this check. A dedicated auditor role with decrypt rights on the log key is needed.

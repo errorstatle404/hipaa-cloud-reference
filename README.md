@@ -2,7 +2,7 @@
 
 > Designed and deployed a HIPAA-style AWS architecture for synthetic patient records, with least-privilege IAM, customer-managed KMS encryption that even the administrator can't use to decrypt, and audit logging on every record access, all written as Terraform and checked against CIS and the HIPAA Security Rule.
 
-**Status:** deployed and verified on Oct 30, 2026 in a lab account. This is a lab build, meant to be torn down after testing; rebuild it with `make up`.
+**Status:** deployed and verified on Oct 30, 2026 in a lab account; torn down on Oct 31, 2026. Rebuild it with `make up`.
 
 ## The problem
 

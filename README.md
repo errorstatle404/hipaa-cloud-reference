@@ -70,7 +70,7 @@ Deployed and tested on Oct 30, 2026. Full detail is in **[docs/results.md](docs/
 
 **Known gaps:** account-level S3 Block Public Access is **not enabled** (an SCP blocks this member account from setting it, so it must be set from the management account). Log integrity validation has not been run, because it needs a dedicated auditor role. The MFA Config rules returned no result.
 
-**What testing caught:** real deployment found three bugs that static analysis had passed, including one that would have silently stopped flow-log delivery. See [what they were and how they were fixed](docs/results.md#bugs-that-testing-found).
+**What testing caught:** real deployment found four issues that static analysis had passed, including one that would have silently stopped flow-log delivery and an alarm that fired constantly on a trusted service's own calls. See [what they were and how they were fixed](docs/results.md#bugs-that-testing-found).
 
 ## Static analysis
 

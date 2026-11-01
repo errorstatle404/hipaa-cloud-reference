@@ -65,3 +65,9 @@ One entry per significant choice: what was decided, why, and what it costs. Entr
 ### ADR-014: Transport encryption floor, and the post-quantum link
 **Decision.** The PHI bucket denies requests without TLS and requests using TLS older than 1.2.
 **Why.** HIPAA 164.312(e)(1) requires transmission security. This is also where the build meets the PQC track: the crypto inventory from project 3b can scan this account and its endpoints, so this build's "encrypted in transit" claim becomes a measured statement about which connections negotiate hybrid post-quantum key exchange and which are still classical. Long-retention health records are exactly the "harvest now, decrypt later" target that motivates PQC migration.
+
+### ADR-015: Exclude AWS Config's own refusals from the unauthorized-calls alarm
+**Decision.** The `unauthorized-api-calls` alarm ignores refused calls made by this build's Config role and still alerts on every other caller.
+**Why.** The first deployment showed the alarm firing 31 times in about a day and a half, driven by AWS Config scanning services the role could not read. Alerts that routine train people to ignore the alarm. This narrows CIS 4.1 on purpose.
+**Trade-off.** A refused call by the Config role no longer raises this alarm. Only the Config service can assume that role, and its calls are still recorded in CloudTrail.
+**How it was checked.** `aws logs test-metric-filter` against sample events. A simpler pattern, comparing only `sessionIssuer.userName`, stopped matching refusals by IAM users and root, because those events do not have that field. The chosen pattern checks the identity type first.

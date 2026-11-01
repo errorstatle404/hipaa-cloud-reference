@@ -144,13 +144,20 @@ Both scans ran after deployment, so this compares before and after the fixes bel
 
 ## Bugs that testing found
 
-Each of these was found by running the build, not by static analysis. checkov passed all of them.
+Each of these was found by running the build, not by static analysis. checkov passed all of them. The last one is alert noise rather than a defect in a control.
 
 | Bug | How it showed up | Fix |
 |---|---|---|
 | Config could not evaluate this build's KMS keys | The key rotation rule reported non-compliant while KMS showed rotation on | Gave Config read-only access to key metadata, with no key use |
 | The flow-log bucket rule named a path flow logs never use | A later Terraform plan would have removed the only working permission, a statement AWS had added itself | Pointed the rule at the real path, then confirmed new log files kept arriving |
 | `verify.sh` asked for a key that did not exist | Two access tests failed with `NoSuchKey` rather than `AccessDenied` | Fixed the key lookup, and confirmed the denials with a real key |
+| The `unauthorized-api-calls` alarm fired constantly on AWS Config's own refused calls | 31 alarm transitions from Oct 30 to Nov 1, each sending an email | Excluded this build's Config role from the alarm, and kept alerting on every other caller (ADR-015). Checked with sample events, not yet deployed |
+
+## Alert noise
+
+While the lab stayed up after testing, `hipaa-ref-unauthorized-api-calls` fired 31 times. Of the 306 refused calls in that period, 305 came from this build's AWS Config role scanning other services, and 1 came from AWS Resource Explorer. All 306 came from AWS services: none came from a person's IAM user or from an outside IP address. At least 86 were refused by an Organization SCP. Most of the others gave no specific reason.
+
+**Lesson:** an alarm can be correct and still be useless if a trusted service sets it off all day. The fix was to exclude that one expected source without weakening the alarm for anyone else. The first version of the fix would have silently stopped alerting on IAM users and root, and testing the filter against sample events caught that before it shipped.
 
 ## Teardown
 

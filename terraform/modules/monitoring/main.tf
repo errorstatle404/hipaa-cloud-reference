@@ -41,8 +41,10 @@ locals {
   # alarm for denied access to patient records.
   alarms = {
     "unauthorized-api-calls" = {
-      description = "API calls denied for lack of permission (CIS 4.1)"
-      pattern     = "{ ($.errorCode = \"*UnauthorizedOperation\") || ($.errorCode = \"AccessDenied*\") }"
+      description = "API calls denied for lack of permission (CIS 4.1), except AWS Config's expected refusals (ADR-015)"
+      # The type check matters: events without sessionContext (IAM users, root,
+      # other accounts) never match a != on sessionIssuer alone.
+      pattern = "{ (($.errorCode = \"*UnauthorizedOperation\") || ($.errorCode = \"AccessDenied*\")) && (($.userIdentity.type != \"AssumedRole\") || ($.userIdentity.sessionContext.sessionIssuer.userName != \"${var.name_prefix}-config\")) }"
     }
     "console-login-without-mfa" = {
       description = "Console sign-in without MFA (CIS 4.2)"
